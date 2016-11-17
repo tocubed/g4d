@@ -35,17 +35,36 @@ def intersect_xyz(a, b):
     return np.add(b, (b_t / (b_t - a_t)) * np.subtract(a, b))
 
 
+def print_intersects(vertices):
+    def intersect_t(a, b):
+        return (b[3] / (b[3] - a[3]))
+    
+    inx = [intersect_t(vertices[0], vertices[1]),
+           intersect_t(vertices[0], vertices[2]),
+           intersect_t(vertices[0], vertices[3]),
+           intersect_t(vertices[1], vertices[2]),
+           intersect_t(vertices[1], vertices[3]),
+           intersect_t(vertices[2], vertices[3])]
+    
+    isign = [int(i > 0 and i < 1) for i in inx]
+    
+    if not sum(isign) in [0, 3, 4]:
+        print("artifactual intersection found:", inx)
+
+
 def slice_xyz_3simplex(vertices):
     t_values = np.array([vertex[3] for vertex in vertices])
     t_sort_i = np.argsort(t_values)
 
     t_sort_vs = np.array(vertices)[t_sort_i]
     t_values = t_values[t_sort_i]
+	
+    print_intersects(vertices)
 
     if t_values[0] > 0 or 0 > t_values[3]:
         return ("no intersection", [])
     elif t_values[0] < 0 < t_values[1]:
-        return ("triangle intersection: first section", [
+       return ("triangle intersection: first section", [
                 intersect_xyz(t_sort_vs[0], t_sort_vs[1]),
                 intersect_xyz(t_sort_vs[0], t_sort_vs[2]),
                 intersect_xyz(t_sort_vs[0], t_sort_vs[3])
@@ -92,7 +111,7 @@ def simplex_scence(simplex):
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     import matplotlib.pyplot as plt
 
-    fig = plt.figure()
+    """fig = plt.figure()
 
     ax = Axes3D(fig)
 
@@ -106,17 +125,17 @@ def simplex_scence(simplex):
     plt.ion()
     plt.show() 
 
+    polys = Poly3DCollection([])
+    ax.add_collection3d(polys)"""
+    
     theta_1 = 0
     theta_2 = 0
     theta_3 = 0
-
-    polys = Poly3DCollection([])
-    ax.add_collection3d(polys)
-
-    while plt.fignum_exists(fig.number):
-        theta_1 += 0.04
-        theta_2 += 0.02
-        theta_3 += 0.01
+    
+    while True: #plt.fignum_exists(fig.number):
+        theta_1 += 0.029
+        theta_2 += 0.007
+        theta_3 += 0.011
         eye = [sin(theta_1) * sin(theta_2) * sin(theta_3),
                sin(theta_1) * sin(theta_2) * cos(theta_3),
                sin(theta_1) * cos(theta_2),
@@ -125,7 +144,7 @@ def simplex_scence(simplex):
         vertices = transform_view_space(simplex, eye, 
                                         [0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0])
         vertices = slice_xyz_3simplex(vertices)[1]
-        vertices = [np.array(vertex).tolist()[:3] for vertex in vertices]
+        """vertices = [np.array(vertex).tolist()[:3] for vertex in vertices]
 
         if len(vertices) > 0:
             polys.set_verts([vertices])
@@ -135,4 +154,4 @@ def simplex_scence(simplex):
         plt.draw()
         plt.pause(0.000001)
 
-        sleep(0.000001)
+        #sleep(0.000001)"""
