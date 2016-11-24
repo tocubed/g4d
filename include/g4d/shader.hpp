@@ -1,3 +1,5 @@
+#include <glad/glad.h>
+
 #include <string>
 
 namespace g4d

@@ -3,6 +3,9 @@
 /* 4D model-view transformation */
 uniform mat4 ModelView; 
 
+/* 4D translation after model-view */
+uniform vec4 Translation;
+
 /* 4D vertex position */
 in vec4 position; 
 
@@ -16,6 +19,6 @@ out Vertex
 
 void main()
 {
-	gl_Position = ModelView * position;
+	gl_Position = (ModelView * position) + Translation;
 	vert_out.color = color;
 }

@@ -53,10 +53,10 @@ void emitEdgeIntersection(uint a, uint b)
 
 void main()
 {
-	emitEdgeIntersection(0, 1);
-	emitEdgeIntersection(0, 2);
-	emitEdgeIntersection(0, 3);
-	emitEdgeIntersection(1, 2);
-	emitEdgeIntersection(1, 3);
-	emitEdgeIntersection(2, 3);
+	emitEdgeIntersection(0u, 1u);
+	emitEdgeIntersection(0u, 2u);
+	emitEdgeIntersection(0u, 3u);
+	emitEdgeIntersection(1u, 2u);
+	emitEdgeIntersection(1u, 3u);
+	emitEdgeIntersection(2u, 3u);
 }
