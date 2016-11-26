@@ -10,7 +10,6 @@ set(GLAD_LIBRARIES ${GLAD_LIBRARIES} PARENT_SCOPE)
 set(GLAD_INCLUDE_DIRS ${GLAD_INCLUDE_DIRS} PARENT_SCOPE)
 
 
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build the GLFW test programs")
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build the GLFW documentation")
@@ -19,3 +18,20 @@ set(GLFW_VULKAN_STATIC OFF CACHE BOOL "Use the Vulkan loader statically linked i
 
 add_subdirectory(glfw)
 set(GLFW_LIBRARIES glfw PARENT_SCOPE)
+
+
+set(GLM_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/glm/include")
+add_custom_command(OUTPUT ${GLM_INCLUDE_DIR} 
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${GLM_INCLUDE_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory 
+			"${CMAKE_CURRENT_SOURCE_DIR}/glm/glm"
+			"${GLM_INCLUDE_DIR}/glm"
+	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/glm/glm"
+	COMMENT "Isolate glm include directory from its source tree")
+add_custom_target(glm_headers DEPENDS ${GLM_INCLUDE_DIR})
+
+add_library(glm INTERFACE)
+add_dependencies(glm glm_headers)
+target_include_directories(glm INTERFACE ${GLM_INCLUDE_DIR})
+
+set(GLM_LIBRARIES glm PARENT_SCOPE)
