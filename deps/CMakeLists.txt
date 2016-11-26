@@ -22,7 +22,6 @@ set(GLFW_LIBRARIES glfw PARENT_SCOPE)
 
 set(GLM_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/glm/include")
 add_custom_command(OUTPUT ${GLM_INCLUDE_DIR} 
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${GLM_INCLUDE_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory 
 			"${CMAKE_CURRENT_SOURCE_DIR}/glm/glm"
 			"${GLM_INCLUDE_DIR}/glm"
