@@ -1,4 +1,6 @@
-#include <g4d/transform.hpp>
+#include <g4d/Transform.hpp>
+
+#include <g4d/Math.hpp>
 
 #include <glm/trigonometric.hpp>
 
@@ -75,6 +77,28 @@ Transform& Transform::scale(glm::dvec4 factors)
 Transform& Transform::scale(double x, double y, double z, double w)
 {
 	return scale(glm::dvec4(x, y, z, w));
+}
+
+Transform& Transform::lookAt(const glm::dvec4& eye, const glm::dvec4& center, 
+                             const glm::dvec4& up, const glm::dvec4& over)
+{
+	glm::dvec4 f = glm::normalize(center - eye);
+	glm::dvec4 s = glm::normalize(g4d::math::cross(f, up, over));
+	glm::dvec4 u = glm::normalize(g4d::math::cross(f, over, s));
+	glm::dvec4 o = glm::normalize(g4d::math::cross(f, s, u));
+
+	linear_map *= glm::transpose(glm::dmat4(s, u, o, f));
+	translate(-eye);
+}
+
+Transform operator*(const Transform& left, const Transform& right)
+{
+	Transform result;
+
+	result.combine(left);
+	result.combine(right);
+
+	return result;
 }
 
 }

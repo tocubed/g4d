@@ -1,7 +1,7 @@
 list(APPEND G4D_SOURCES
-	"g4d/log.cpp"
-	"g4d/shader.cpp"
-	"g4d/transform.cpp"
+	"g4d/Shader.cpp"
+	"g4d/ShaderProgram.cpp"
+	"g4d/Transform.cpp"
 )
 
 add_library(g4d STATIC ${G4D_SOURCES})
