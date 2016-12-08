@@ -29,6 +29,9 @@ public:
 	Transform& lookAt(const glm::dvec4& eye, const glm::dvec4& center, 
 	                  const glm::dvec4& up, const glm::dvec4& over);
 
+	Transform& viewSpace(const glm::dvec4& x, const glm::dvec4& y, 
+	                     const glm::dvec4& negative_z);
+
 	static const Transform Identity;
 
 private:

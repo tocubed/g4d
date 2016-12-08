@@ -4,6 +4,8 @@
 
 #include <glm/trigonometric.hpp>
 
+#include <iostream>
+
 namespace g4d
 {
 
@@ -91,14 +93,35 @@ Transform& Transform::lookAt(const glm::dvec4& eye, const glm::dvec4& center,
 	translate(-eye);
 }
 
+/*
+void printTransform(glm::dmat4 linear_map, glm::dvec4 translation)
+{
+	for(auto i = 0; i < 4; i++)
+	{
+		for(auto j = 0; j < 4; j++)
+		{
+			std::cout << linear_map[j][i] << ' ';
+		}
+		std::cout << '\n';
+	}
+
+	for(auto i = 0; i < 4; i++)
+		std::cout << translation[i] << ' ';
+	std::cout << '\n';
+}
+*/
+
+Transform& Transform::viewSpace(const glm::dvec4& x, const glm::dvec4& y,
+                                const glm::dvec4& negative_z)
+{
+	glm::dvec4 w = -math::cross(x, y, -negative_z);
+
+	lookAt(glm::dvec4(), w, y, -negative_z);
+}
+
 Transform operator*(const Transform& left, const Transform& right)
 {
-	Transform result;
-
-	result.combine(left);
-	result.combine(right);
-
-	return result;
+	return Transform(left).combine(right);
 }
 
 }

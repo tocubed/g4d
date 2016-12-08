@@ -72,6 +72,8 @@ void setUniforms()
 */
 
 	Transform view;
+	view.viewSpace(glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0), 
+	               glm::dvec4(0, 0, 0, 1));
 	view.lookAt(glm::dvec4(0, 0, 0, -3), glm::dvec4(),
 	            glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
 

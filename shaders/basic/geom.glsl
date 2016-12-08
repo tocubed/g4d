@@ -1,12 +1,12 @@
 #version 330
 
-/* Tetrahedron in 4D space as 4 vertices */
+/* Tetrahedron in 4D view space as 4 vertices */
 layout (lines_adjacency) in;
 
-/* Intersection of tetrahedron and YZW hyperplane, transformed and projected */
+/* Intersection of tetrahedron and XYZ hyperplane, transformed to clip space */
 layout (triangle_strip, max_vertices = 4) out;
 
-/* Projection from XYZ space to screen */
+/* Projection from 3D XYZ view space to clip space */
 uniform mat4 Projection;
 
 /* Other vertex attributes */
@@ -22,19 +22,18 @@ out Vertex
 
 
 /*
-   Finds the intersection of the edge (a, b) and the YZW hyperplane.
-   Returns a value `t` such that `mix(a, b, t).x == 0`
+   Finds the intersection of the edge (a, b) and the XYZ hyperplane.
+   Returns a value `t` such that `mix(a, b, t).w == 0`
 */
 float intersectEdge(vec4 a, vec4 b)
 {
-	return a.x / (a.x - b.x);
+	return a.w / (a.w - b.w);
 }
 
 /*
-   Emits a vertex if there is an intersection between the YZW hyperplane and the 
-   edge (a, b). The vertex is transformed from the YZW hyperplane to XYZ space,
-   with the resulting -Z serving as the view direction. The vertex's other 
-   attributes are interpolated appropriately from (a, b).
+   Emits a vertex if there is an intersection between the XYZ hyperplane and the 
+   edge (a, b). The vertex is then transformed from 3D XYZ view space to clip space.
+   The vertex's other attributes are interpolated when appropriate from (a, b).
 */
 void emitEdgeIntersection(uint a, uint b)
 {
@@ -43,7 +42,7 @@ void emitEdgeIntersection(uint a, uint b)
 	if(0 < t && t < 1)
 	{
 		gl_Position = mix(gl_in[a].gl_Position, gl_in[b].gl_Position, t);
-		gl_Position = Projection * vec4(gl_Position.y, gl_Position.z, -gl_Position.w, 1.0);
+		gl_Position = Projection * vec4(gl_Position.xyz, 1.0);
 
 		vert_out.color = mix(vert_in[a].color, vert_in[b].color, t);
 
