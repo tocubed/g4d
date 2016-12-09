@@ -10,11 +10,11 @@ namespace g4d
 class Shader
 {
 public:
-	enum class Type
+	enum class Type : GLenum
 	{
-		Vertex   = 1 << 0,
-	   	Fragment = 1 << 1, 
-		Geometry = 1 << 2
+		Vertex   = GL_VERTEX_SHADER,
+	   	Fragment = GL_FRAGMENT_SHADER, 
+		Geometry = GL_GEOMETRY_SHADER
 	};
 
 	explicit Shader(Type type);

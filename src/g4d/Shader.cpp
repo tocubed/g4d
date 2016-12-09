@@ -6,18 +6,7 @@ namespace g4d
 Shader::Shader(Shader::Type type)
 	: type(type)
 {
-	switch(type)
-	{
-		case Type::Vertex:
-			shader = glCreateShader(GL_VERTEX_SHADER);
-			break;
-		case Type::Fragment:
-			shader = glCreateShader(GL_FRAGMENT_SHADER);
-			break;
-		case Type::Geometry:
-			shader = glCreateShader(GL_GEOMETRY_SHADER);
-			break;
-	}
+	shader = glCreateShader(static_cast<GLenum>(type));
 }
 
 Shader::~Shader()

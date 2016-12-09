@@ -1,3 +1,4 @@
+#include <g4d/Buffer.hpp>
 #include <g4d/ShaderProgram.hpp>
 #include <g4d/Transform.hpp>
 
@@ -64,24 +65,29 @@ void setUniforms()
 	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		angle3 += invert * 0.011;
 
-/*
+	/*
 	float x = glm::cos(angle1);
 	float y = glm::sin(angle1) * glm::cos(angle2);
 	float z = glm::sin(angle1) * glm::sin(angle2) * glm::cos(angle3);
 	float w = glm::sin(angle1) * glm::sin(angle2) * glm::sin(angle3);
-*/
+	*/
 
 	Transform view;
 	view.viewSpace(glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0), 
 	               glm::dvec4(0, 0, 0, 1));
+	/*
 	view.lookAt(glm::dvec4(0, 0, 0, -3), glm::dvec4(),
+	            glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
+				*/
+	view.lookAt(glm::dvec4(), glm::dvec4(0, 0, 0, 1),
 	            glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
 
 	Transform model;
-	model.translate(.5, 0, 0, -1.5);
+	//model.translate(.5, 0, 0, -1.5);
 	model.rotate(angle1, glm::dvec4(1, 0, 0, 0), glm::dvec4(0, 0, 0, 1));
 	model.rotate(angle2, glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
 	model.rotate(angle3, glm::dvec4(0, 1, 1, 0), glm::dvec4(1, 0, 0, 1));
+	model.scale(10, 10, 10, 10);
 
 	Transform model_view = view * model;
 
@@ -102,8 +108,11 @@ void setUniforms()
 	program->release();
 }
 
-GLuint vbo[3];
 GLuint vao;
+
+std::unique_ptr<Buffer> position_buffer;
+std::unique_ptr<Buffer> color_buffer;
+std::unique_ptr<Buffer> index_buffer;
 
 void initModel()
 {
@@ -206,31 +215,32 @@ void initModel()
 		5 , 3 , 13 , 1
 	};
 
-	glGenBuffers(3, &vbo[0]);
+	position_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
+	position_buffer->allocate(hypercube, 8 * 4 * sizeof(float));
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, 64 * sizeof(float), hypercube, GL_STATIC_DRAW);
+	color_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
+	color_buffer->allocate(colors, 8 * 4 * sizeof(float));
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, 64 * sizeof(float), colors, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 58 * 4 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	index_buffer = std::make_unique<Buffer>(Buffer::Type::Index);
+	index_buffer->allocate(indices, 58 * 4 * sizeof(unsigned int));
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+
+	position_buffer->bind();
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+
+	color_buffer->bind();
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 }
 
 
 void drawModel()
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
+	index_buffer->bind();
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_LINES_ADJACENCY, 58 * 4, GL_UNSIGNED_INT, nullptr);
@@ -278,6 +288,7 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glfwSwapInterval(1);

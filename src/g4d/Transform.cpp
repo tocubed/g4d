@@ -4,8 +4,6 @@
 
 #include <glm/trigonometric.hpp>
 
-#include <iostream>
-
 namespace g4d
 {
 
@@ -92,24 +90,6 @@ Transform& Transform::lookAt(const glm::dvec4& eye, const glm::dvec4& center,
 	linear_map *= glm::transpose(glm::dmat4(s, u, o, f));
 	translate(-eye);
 }
-
-/*
-void printTransform(glm::dmat4 linear_map, glm::dvec4 translation)
-{
-	for(auto i = 0; i < 4; i++)
-	{
-		for(auto j = 0; j < 4; j++)
-		{
-			std::cout << linear_map[j][i] << ' ';
-		}
-		std::cout << '\n';
-	}
-
-	for(auto i = 0; i < 4; i++)
-		std::cout << translation[i] << ' ';
-	std::cout << '\n';
-}
-*/
 
 Transform& Transform::viewSpace(const glm::dvec4& x, const glm::dvec4& y,
                                 const glm::dvec4& negative_z)

@@ -1,4 +1,5 @@
 list(APPEND G4D_SOURCES
+	"g4d/Buffer.cpp"
 	"g4d/Shader.cpp"
 	"g4d/ShaderProgram.cpp"
 	"g4d/Transform.cpp"
