@@ -3,6 +3,7 @@ list(APPEND G4D_SOURCES
 	"g4d/Shader.cpp"
 	"g4d/ShaderProgram.cpp"
 	"g4d/Transform.cpp"
+	"g4d/VertexArray.cpp"
 )
 
 add_library(g4d STATIC ${G4D_SOURCES})

@@ -1,6 +1,7 @@
 #include <g4d/Buffer.hpp>
 #include <g4d/ShaderProgram.hpp>
 #include <g4d/Transform.hpp>
+#include <g4d/VertexArray.hpp>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -39,8 +40,6 @@ void initProgram()
 	fragment.compile(readFile("../shaders/basic/frag.glsl"));
 
 	assert(vertex.isCompiled());
-	if(!geometry.isCompiled())
-		std::cout << geometry.getLog() << std::endl;
 	assert(geometry.isCompiled());
 	assert(fragment.isCompiled());
 
@@ -108,11 +107,11 @@ void setUniforms()
 	program->release();
 }
 
-GLuint vao;
-
 std::unique_ptr<Buffer> position_buffer;
 std::unique_ptr<Buffer> color_buffer;
 std::unique_ptr<Buffer> index_buffer;
+
+std::unique_ptr<VertexArray> hypercube_vertex_array;
 
 void initModel()
 {
@@ -216,34 +215,42 @@ void initModel()
 	};
 
 	position_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
-	position_buffer->allocate(hypercube, 8 * 4 * sizeof(float));
+	position_buffer->allocate(hypercube, 16 * 4 * sizeof(float));
 
 	color_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
-	color_buffer->allocate(colors, 8 * 4 * sizeof(float));
+	color_buffer->allocate(colors, 16 * 4 * sizeof(float));
 
 	index_buffer = std::make_unique<Buffer>(Buffer::Type::Index);
 	index_buffer->allocate(indices, 58 * 4 * sizeof(unsigned int));
 
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	hypercube_vertex_array = std::make_unique<VertexArray>();
 
-	position_buffer->bind();
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	hypercube_vertex_array->bind();
+	index_buffer->bind();
 
-	color_buffer->bind();
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	VertexArray::AttributeLayout position_layout{
+	    0, 4, GL_FLOAT, GL_FALSE, 0, nullptr, false};
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	VertexArray::AttributeLayout color_layout{
+	    1, 4, GL_FLOAT, GL_FALSE, 0, nullptr, false};
+
+	hypercube_vertex_array->addAttributeBuffer(*position_buffer, position_layout);
+	hypercube_vertex_array->addAttributeBuffer(*color_buffer, color_layout);
+
+	hypercube_vertex_array->enableAttribute(0);
+	hypercube_vertex_array->enableAttribute(1);
+
+	hypercube_vertex_array->release();
 }
 
 
 void drawModel()
 {
-	index_buffer->bind();
+	hypercube_vertex_array->bind();
 
-	glBindVertexArray(vao);
 	glDrawElements(GL_LINES_ADJACENCY, 58 * 4, GL_UNSIGNED_INT, nullptr);
+
+	hypercube_vertex_array->release();
 }
 
 double last_time;
