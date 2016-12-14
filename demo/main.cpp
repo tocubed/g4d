@@ -56,12 +56,13 @@ void loadTexture()
 {
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_3D, texture);
-
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	
 	int w, h, n;
 	void* data = stbi_load("../demo/hypercube_texture.png", &w, &h, &n, 0);
 
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_COMPRESSED_RGB, w, w, h / w, 0, GL_RGB,
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, w, w, h / w, 0, GL_RGB,
 	             GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_3D);
 	
