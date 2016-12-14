@@ -23,7 +23,7 @@ def output_3D(dimensions, gray, fp, format='PNG'):
     xyz = np.array(np.meshgrid(x, y, z))
 
     grays = gray(xyz)
-    grays = grays.reshape((dimensions[0], dimensions[1] * dimensions[2]))
+    grays = grays.T.reshape((dimensions[2] * dimensions[1], dimensions[0]))
 
     grayscale = (255.0 / grays.max() * (grays - grays.min())).astype(np.uint8)
 
@@ -62,9 +62,9 @@ def output_3D_RGB(dimensions, red, green, blue, fp, format='PNG'):
     greens = green(xyz)
     blues = blue(xyz)
 
-    reds = reds.reshape((dimensions[0], dimensions[1] * dimensions[2]))
-    greens = greens.reshape((dimensions[0], dimensions[1] * dimensions[2]))
-    blues = blues.reshape((dimensions[0], dimensions[1] * dimensions[2]))
+    reds = reds.T.reshape((dimensions[2] * dimensions[1], dimensions[0]))
+    greens = greens.T.reshape((dimensions[2] * dimensions[1], dimensions[0]))
+    blues = blues.T.reshape((dimensions[2] * dimensions[1], dimensions[0]))
 
     redscale = (255.0 / reds.max() * (reds - reds.min())).astype(np.uint8)
     greenscale = (255.0 / greens.max() * (greens - greens.min())).astype(np.uint8)

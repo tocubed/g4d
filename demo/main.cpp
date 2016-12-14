@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/trigonometric.hpp>
+#include <stb/stb_image.h>
 
 #include <fstream>
 #include <iostream>
@@ -35,9 +36,9 @@ void initProgram()
 	Shader geometry(Shader::Type::Geometry);
 	Shader fragment(Shader::Type::Fragment);
 
-	vertex.compile(readFile("../shaders/basic/vert.glsl"));
-	geometry.compile(readFile("../shaders/basic/geom.glsl"));
-	fragment.compile(readFile("../shaders/basic/frag.glsl"));
+	vertex.compile(readFile("../shaders/textured/vert.glsl"));
+	geometry.compile(readFile("../shaders/textured/geom.glsl"));
+	fragment.compile(readFile("../shaders/textured/frag.glsl"));
 
 	assert(vertex.isCompiled());
 	assert(geometry.isCompiled());
@@ -47,6 +48,26 @@ void initProgram()
 	program->link(vertex, geometry, fragment);
 	
 	assert(program->isLinked());
+}
+
+GLuint texture;
+
+void loadTexture()
+{
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_3D, texture);
+
+	
+	int w, h, n;
+	void* data = stbi_load("../demo/hypercube_texture.png", &w, &h, &n, 0);
+
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_COMPRESSED_RGB, w, w, h / w, 0, GL_RGB,
+	             GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_3D);
+	
+	stbi_image_free(data);
+
+	glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 float angle1;
@@ -82,7 +103,7 @@ void setUniforms()
 	            glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
 
 	Transform model;
-	//model.translate(.5, 0, 0, -1.5);
+	model.translate(0, 0, 0, 25);
 	model.rotate(angle1, glm::dvec4(1, 0, 0, 0), glm::dvec4(0, 0, 0, 1));
 	model.rotate(angle2, glm::dvec4(0, 1, 0, 0), glm::dvec4(0, 0, 1, 0));
 	model.rotate(angle3, glm::dvec4(0, 1, 1, 0), glm::dvec4(1, 0, 0, 1));
@@ -109,6 +130,7 @@ void setUniforms()
 
 std::unique_ptr<Buffer> position_buffer;
 std::unique_ptr<Buffer> color_buffer;
+std::unique_ptr<Buffer> texcoord_buffer;
 std::unique_ptr<Buffer> index_buffer;
 
 std::unique_ptr<VertexArray> hypercube_vertex_array;
@@ -132,6 +154,25 @@ void initModel()
 		   0.5,   0.5,  -0.5,   0.5,
 		   0.5,   0.5,   0.5,  -0.5,
 		   0.5,   0.5,   0.5,   0.5
+	};
+
+	static const float texcoords[] = {
+		  0,  0,  0,  
+		  0,  0,  1, 
+		  0,  1,  0, 
+		  0,  1,  1, 
+		  1,  0,  0, 
+		  1,  0,  1, 
+		  1,  1,  0, 
+		  1,  1,  1, 
+		  1,  1,  1, 
+		  1,  1,  0, 
+		  1,  0,  1, 
+		  1,  0,  0, 
+		  0,  1,  1, 
+		  0,  1,  0, 
+		  0,  0,  1, 
+		  0,  0,  0
 	};
 	
 	static const float colors[] = {
@@ -220,6 +261,9 @@ void initModel()
 	color_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
 	color_buffer->allocate(colors, 16 * 4 * sizeof(float));
 
+	texcoord_buffer = std::make_unique<Buffer>(Buffer::Type::Vertex);
+	texcoord_buffer->allocate(texcoords, 16 * 3 * sizeof(float));
+
 	index_buffer = std::make_unique<Buffer>(Buffer::Type::Index);
 	index_buffer->allocate(indices, 58 * 4 * sizeof(unsigned int));
 
@@ -234,11 +278,16 @@ void initModel()
 	VertexArray::AttributeLayout color_layout{
 	    1, 4, GL_FLOAT, GL_FALSE, 0, nullptr, false};
 
+	VertexArray::AttributeLayout texcoord_layout{
+	    2, 3, GL_FLOAT, GL_FALSE, 0, nullptr, false};
+
 	hypercube_vertex_array->addAttributeBuffer(*position_buffer, position_layout);
 	hypercube_vertex_array->addAttributeBuffer(*color_buffer, color_layout);
+	hypercube_vertex_array->addAttributeBuffer(*texcoord_buffer, texcoord_layout);
 
 	hypercube_vertex_array->enableAttribute(0);
 	hypercube_vertex_array->enableAttribute(1);
+	hypercube_vertex_array->enableAttribute(2);
 
 	hypercube_vertex_array->release();
 }
@@ -247,9 +296,11 @@ void initModel()
 void drawModel()
 {
 	hypercube_vertex_array->bind();
+	glBindTexture(GL_TEXTURE_3D, texture);
 
 	glDrawElements(GL_LINES_ADJACENCY, 58 * 4, GL_UNSIGNED_INT, nullptr);
 
+	glBindTexture(GL_TEXTURE_3D, 0);
 	hypercube_vertex_array->release();
 }
 
@@ -292,11 +343,12 @@ int main()
 
 	initProgram();
 	initModel();
+	loadTexture();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glfwSwapInterval(1);
 	while (!glfwWindowShouldClose(window))
