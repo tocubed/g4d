@@ -11,5 +11,5 @@ out vec4 color;
 
 void main()
 {
-	color = texture(hypertexture, vert_in.texcoord) * vert_in.color;
+	color = texture(hypertexture, vert_in.texcoord);
 }
