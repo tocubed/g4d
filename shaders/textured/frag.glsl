@@ -4,7 +4,6 @@ uniform sampler3D hypertexture;
 
 in Vertex
 {
-	smooth vec4 color;
 	smooth vec3 texcoord;
 } vert_in;
 

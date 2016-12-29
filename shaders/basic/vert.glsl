@@ -7,9 +7,9 @@ uniform mat4 ModelViewLinearMap;
 uniform vec4 ModelViewTranslation;
 
 /* 4D vertex position */
-layout(location = 0) in vec4 position; 
+layout in vec4 position; 
 
-layout(location = 1) in vec4 color; 
+layout in vec4 color; 
 
 out Vertex
 {

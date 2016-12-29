@@ -12,13 +12,11 @@ uniform mat4 Projection;
 /* Other vertex attributes */
 in Vertex
 {
-	vec4 color;
 	vec3 texcoord;
 } vert_in[];
 
 out Vertex
 {
-	smooth vec4 color;
 	smooth vec3 texcoord;
 } vert_out;
 
@@ -46,7 +44,6 @@ void emitEdgeIntersection(uint a, uint b)
 		gl_Position = mix(gl_in[a].gl_Position, gl_in[b].gl_Position, t);
 		gl_Position = Projection * vec4(gl_Position.xyz, 1.0);
 
-		vert_out.color = mix(vert_in[a].color, vert_in[b].color, t);
 		vert_out.texcoord = mix(vert_in[a].texcoord, vert_in[b].texcoord, t);
 
 		EmitVertex();
