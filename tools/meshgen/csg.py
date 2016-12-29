@@ -1,6 +1,8 @@
 import itertools
 import numpy as np
 from scipy.spatial import ConvexHull
+import struct
+import random
 
 
 class Vertex(object):
@@ -20,6 +22,9 @@ class Vertex(object):
     def clone(self):
         return Vertex(np.copy(self.point))
 
+    def to_bytes(self):
+        return self.point.astype("<f4").tobytes()
+
     @property
     def dimension(self):
         return self.point.size
@@ -29,7 +34,7 @@ class ConvexPolytope(object):
 
     __slots__ = ("vertices", "hull", "plane", "attributes")
 
-    def __init__(self, vertices, plane, attributes=None):
+    def __init__(self, vertices, plane, attributes={}):
         self.vertices = vertices
         self.hull = ConvexHull([v.point for v in vertices])
         self.plane = plane
@@ -45,14 +50,14 @@ class ConvexPolytope(object):
             edges |= {frozenset((simplex[i], simplex[j])) for i, j in simplex_edges}
         return edges
 
-    def flip():
+    def flip(self):
         self.plane.flip()
         for v in self.vertices:
             v.flip()
 
-    def clone():
+    def clone(self):
         vertices = [v.clone() for v in self.vertices]
-        return ConvexHull(vertices, self.plane.clone(), self.attributes)
+        return ConvexPolytope(vertices, self.plane.clone(), self.attributes)
 
     @property
     def points(self):
@@ -75,6 +80,8 @@ class Plane(object):
 
     __slots__ = ("normal", "distance")
 
+    EPSILON = 1.0e-10
+
     def __init__(self, normal, distance=0.0):
         self.normal = normal
         self.distance = distance
@@ -84,7 +91,6 @@ class Plane(object):
         FRONT = 1
         BACK = 2
         SPANNING = FRONT | BACK
-        EPSILON = 1.0e-10
 
         plane = polytope.plane.global_plane_to_local(self)
 
@@ -95,8 +101,8 @@ class Plane(object):
         types = {}
         polytope_type = COPLANAR
         for index, distance in zip(indices, distances):
-            v_type = FRONT if distance > EPSILON else \
-                     BACK if distance < -EPSILON else COPLANAR
+            v_type = FRONT if distance > Plane.EPSILON else \
+                     BACK if distance < -Plane.EPSILON else COPLANAR
             types[index] = v_type
             polytope_type |= v_type
         
@@ -140,7 +146,7 @@ class Plane(object):
         half_vector[-1] += 1
 
         half_vector_norm = np.linalg.norm(half_vector)
-        if half_vector_norm == 0:
+        if half_vector_norm < Plane.EPSILON:
             half_vector[:] = 0
         else:
             half_vector /= half_vector_norm
@@ -153,7 +159,7 @@ class Plane(object):
         distance = np.dot(p.normal, diff_vector)
 
         normal_norm = np.linalg.norm(normal)
-        if normal_norm == 0:
+        if normal_norm < Plane.EPSILON:
             normal[:] = 0
         else:
             normal /= normal_norm
@@ -168,7 +174,7 @@ class Plane(object):
         half_vector[-1] += 1
 
         half_vector_norm = np.linalg.norm(half_vector)
-        if half_vector_norm == 0:
+        if half_vector_norm < Plane.EPSILON:
             half_vector[:] = 0
         else:
             half_vector /= half_vector_norm
@@ -181,7 +187,7 @@ class Plane(object):
         half_vector[-1] += 1
 
         half_vector_norm = np.linalg.norm(half_vector)
-        if half_vector_norm == 0:
+        if half_vector_norm < Plane.EPSILON:
             half_vector[:] = 0
         else:
             half_vector /= half_vector_norm
@@ -212,6 +218,10 @@ class Plane(object):
         return Plane(np.copy(self.normal), self.distance)
 
     @property
+    def origin(self):
+        return self.normal * self.distance
+
+    @property
     def dimension(self):
         return self.normal.size
 
@@ -221,6 +231,9 @@ class BSP(object):
     __slots__ = ("plane", "front", "back", "polytopes")
 
     def __init__(self, polytopes=None):
+        self.plane = None
+        self.front = None
+        self.back = None
         self.polytopes = []
         if polytopes:
             self.build(polytopes)
@@ -356,5 +369,24 @@ class CSG(object):
             poly.flip()
         return csg
 
-    def clone(self):
-        return CSG([p.clone() for p in self.polytopes])
+    def translate(self, vector):
+        csg = self.clone()
+        for poly in csg.polytopes:
+            parallel = np.dot(poly.plane.normal, vector) #TODO ADD PROPS TO POLYTP
+            poly.plane.distance -= parallel
+
+            perp = -np.subtract(vector, poly.plane.normal * parallel)
+            translation = poly.plane.global_point_to_local(perp + poly.plane.origin)
+
+            for vertex in poly.vertices:
+                vertex.point += translation
+        return csg
+
+    def scale(self, factors):
+        pass
+
+    def clone(self): # TODO USE BETTER HEURISTICS, AND DONT USE THEM HERE IN CLONE
+        polys = [p.clone() for p in self.polytopes]
+        random.shuffle(polys)
+        return CSG(polys)
+        #return CSG([p.clone() for p in self.polytopes])
