@@ -21,6 +21,8 @@ VertexLayout& VertexLayout::add(VertexElement element)
 VertexLayout& VertexLayout::setSize(std::size_t size)
 {
 	this->size = size;
+
+	return *this;
 }
 
 const VertexElement* VertexLayout::elementsBegin() const

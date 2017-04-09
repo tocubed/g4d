@@ -39,6 +39,7 @@ GLenum toGLAttributeType(VertexAttributeType type)
 		return GL_UNSIGNED_INT;
 	default:
 		// this should never happen
+		return GL_INVALID_ENUM;
 		break;
 	}
 }

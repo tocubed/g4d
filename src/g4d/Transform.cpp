@@ -89,6 +89,8 @@ Transform& Transform::lookAt(const glm::dvec4& eye, const glm::dvec4& center,
 
 	linear_map *= glm::transpose(glm::dmat4(s, u, o, f));
 	translate(-eye);
+
+	return *this;
 }
 
 Transform& Transform::viewSpace(const glm::dvec4& x, const glm::dvec4& y,
@@ -96,7 +98,7 @@ Transform& Transform::viewSpace(const glm::dvec4& x, const glm::dvec4& y,
 {
 	glm::dvec4 w = -math::cross(x, y, -negative_z);
 
-	lookAt(glm::dvec4(), w, y, -negative_z);
+	return lookAt(glm::dvec4(), w, y, -negative_z);
 }
 
 Transform operator*(const Transform& left, const Transform& right)
